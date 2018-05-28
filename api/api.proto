@@ -13,12 +13,10 @@ message KeyExchange {
     MessageID ID      = 1;
     bytes IdentityKey = 2;
     bytes Key         = 3;
-    bytes Signature   = 4;
 }
 
 message Message {
     MessageID ID    = 1;
     bytes NextKey   = 2;
     bytes IO        = 3;
-    bytes Signature = 4;
 }

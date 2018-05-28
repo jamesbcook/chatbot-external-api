@@ -6,7 +6,12 @@ import (
 	"net"
 
 	"github.com/jamesbcook/chatbot-external-api/crypto"
-	"golang.org/x/crypto/sha3"
+)
+
+const (
+	msgLengthSize   = 4
+	nonceLengthSize = 12
+	signatureSize   = 64
 )
 
 var (
@@ -40,11 +45,6 @@ func SetSecretKeyPair(key crypto.ED25519) {
 
 func GetIdentityKey() string {
 	return hex.EncodeToString(secretKey.PrivateKey.Buffer())
-}
-
-func signMessage(msg []byte) []byte {
-	sha := sha3.New256()
-	return secretKey.Sign(sha.Sum(msg))
 }
 
 func keyRatchet() (*crypto.ECDH, error) {

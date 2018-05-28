@@ -30,7 +30,6 @@ func (s *Session) SendEncryptedMsg(message *api.Message) error {
 	}
 	s.Keys.OurEphemeral = dh
 	message.NextKey = dh.PublicKey.Buffer()
-	message.Signature = secretKey.Sign(dh.PublicKey.Buffer())
 	marshalled, err := proto.Marshal(message)
 	if err != nil {
 		return err
@@ -40,13 +39,18 @@ func (s *Session) SendEncryptedMsg(message *api.Message) error {
 		return err
 	}
 	sessionCrypto.Key.Destroy()
-	lengthBuffer := make([]byte, 4)
+	var signData []byte
+	signData = append(signData, sessionCrypto.Nonce[:]...)
+	signData = append(signData, encryptedOut...)
+	signed := signMessage(signData)
+	lengthBuffer := make([]byte, msgLengthSize)
 	msgLength := uint32(len(encryptedOut))
-	binary.LittleEndian.PutUint32(lengthBuffer, msgLength+12)
-	fullSessionMessage := make([]byte, 4+12+msgLength)
+	binary.LittleEndian.PutUint32(lengthBuffer, signatureSize+nonceLengthSize+msgLength)
+	fullSessionMessage := make([]byte, msgLengthSize+signatureSize+nonceLengthSize+msgLength)
 	copy(fullSessionMessage, lengthBuffer)
-	copy(fullSessionMessage[4:], sessionCrypto.Nonce[:])
-	copy(fullSessionMessage[4+12:], encryptedOut)
+	copy(fullSessionMessage[msgLengthSize:], signed)
+	copy(fullSessionMessage[msgLengthSize+signatureSize:], sessionCrypto.Nonce[:])
+	copy(fullSessionMessage[msgLengthSize+signatureSize+nonceLengthSize:], encryptedOut)
 	if _, err := s.connection.Write(fullSessionMessage); err != nil {
 		return fmt.Errorf("Error sending encrypted message %v", err)
 	}
@@ -55,7 +59,7 @@ func (s *Session) SendEncryptedMsg(message *api.Message) error {
 
 //ReceiveEncryptedMsg from a connection
 func (s *Session) ReceiveEncryptedMsg() (*api.Message, error) {
-	sLen := make([]byte, 4)
+	sLen := make([]byte, msgLengthSize)
 	_, err := s.connection.Read(sLen)
 	if err != nil {
 		return nil, fmt.Errorf("Error reading encrypted msg length %v", err)
@@ -66,6 +70,9 @@ func (s *Session) ReceiveEncryptedMsg() (*api.Message, error) {
 	if err != nil {
 		return nil, fmt.Errorf("Error reading encrypted msg length %v", err)
 	}
+	if !verifyMessage(s.Keys.TheirIdentityKey, payload) {
+		return nil, fmt.Errorf("Message sig not valid")
+	}
 	sessionCrypto := &crypto.Symmetric{}
 	var nonce [12]byte
 	var tmpsKey [32]byte
@@ -74,13 +81,11 @@ func (s *Session) ReceiveEncryptedMsg() (*api.Message, error) {
 	if err != nil {
 		return nil, err
 	}
-	//s.Keys.OurEphemeral.PrivateKey.Wipe()
-	//s.Keys.OurEphemeral.PublicKey.Wipe()
-	copy(nonce[:], payload[0:12])
+	copy(nonce[:], payload[64:76])
 	if err := sessionCrypto.CreateKey(&nonce); err != nil {
 		return nil, err
 	}
-	output, err := sessionCrypto.Decrypt(payload[12:])
+	output, err := sessionCrypto.Decrypt(payload[76:])
 	if err != nil {
 		return nil, err
 	}
@@ -89,9 +94,6 @@ func (s *Session) ReceiveEncryptedMsg() (*api.Message, error) {
 	err = proto.Unmarshal(output, ms)
 	if err != nil {
 		return nil, err
-	}
-	if !crypto.Verify(s.Keys.TheirIdentityKey, ms.NextKey, ms.Signature) {
-		return nil, fmt.Errorf("Sig doesn't match")
 	}
 	s.Keys.Theirephemeral = ms.NextKey
 	return ms, nil

@@ -24,7 +24,6 @@ func Dial(network, address string) (*Session, error) {
 	keyInfo.ID = api.MessageID_ECDH
 	keyInfo.Key = dh.PublicKey.Buffer()
 	keyInfo.IdentityKey = secretKey.PublicKey.Buffer()
-	keyInfo.Signature = secretKey.Sign(dh.PublicKey.Buffer())
 	if err := s.SendDH(keyInfo); err != nil {
 		return nil, err
 	}

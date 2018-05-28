@@ -43,12 +43,10 @@ func (l Listener) Accept() (*Session, error) {
 		return nil, err
 	}
 	s.Keys.OurEphemeral = ourDH
-	signedDHKey := secretKey.Sign(ourDH.PublicKey.Buffer())
 	keyInfo := &api.KeyExchange{}
 	keyInfo.ID = api.MessageID_ECDH
 	keyInfo.IdentityKey = secretKey.PublicKey.Buffer()
 	keyInfo.Key = ourDH.PublicKey.Buffer()
-	keyInfo.Signature = signedDHKey
 	if err := s.SendDH(keyInfo); err != nil {
 		return nil, err
 	}

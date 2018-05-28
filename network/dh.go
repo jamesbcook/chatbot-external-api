@@ -6,7 +6,6 @@ import (
 
 	proto "github.com/golang/protobuf/proto"
 	"github.com/jamesbcook/chatbot-external-api/api"
-	"github.com/jamesbcook/chatbot-external-api/crypto"
 )
 
 //SendDH to a connection
@@ -17,10 +16,12 @@ func (s Session) SendDH(keyInfo *api.KeyExchange) error {
 	}
 	marshLen := uint32(len(marshaledKey))
 	lenBuf := make([]byte, 4)
-	binary.LittleEndian.PutUint32(lenBuf, marshLen)
-	fullKeyMsg := make([]byte, 4+marshLen)
+	binary.LittleEndian.PutUint32(lenBuf, 64+marshLen)
+	fullKeyMsg := make([]byte, 4+64+marshLen)
+	signed := signMessage(marshaledKey)
 	copy(fullKeyMsg, lenBuf)
-	copy(fullKeyMsg[4:], marshaledKey)
+	copy(fullKeyMsg[4:], signed)
+	copy(fullKeyMsg[4+64:], marshaledKey)
 
 	if _, err := s.connection.Write(fullKeyMsg); err != nil {
 		return fmt.Errorf("Error sending dh key %v", err)
@@ -39,14 +40,15 @@ func (s Session) ReceiveDH() (*api.KeyExchange, error) {
 	if _, err := s.connection.Read(msg); err != nil {
 		return nil, fmt.Errorf("Error reading key %v", err)
 	}
+	data := make([]byte, len(msg)-64)
+	copy(data, msg[64:])
 	keyExchange := &api.KeyExchange{}
-	err = proto.Unmarshal(msg, keyExchange)
+	err = proto.Unmarshal(data, keyExchange)
 	if err != nil {
 		return nil, err
 	}
-	if !crypto.Verify(keyExchange.IdentityKey, keyExchange.Key, keyExchange.Signature) {
-		return nil, fmt.Errorf("Signature doesn't match")
+	if !verifyMessage(keyExchange.IdentityKey, msg) {
+		return nil, fmt.Errorf("Sig doesn't match")
 	}
-	fmt.Println("Keys valid")
 	return keyExchange, nil
 }
