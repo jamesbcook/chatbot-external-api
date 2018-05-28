@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+package api;
+
+enum MessageID {
+    Done     = 0;
+    ECDH     = 1;
+    Nmap     = 2;
+    Hash     = 3;
+    Response = 4;
+}
+message KeyExchange {
+    MessageID ID      = 1;
+    bytes IdentityKey = 2;
+    bytes Key         = 3;
+    bytes Signature   = 4;
+}
+
+message Message {
+    MessageID ID    = 1;
+    bytes NextKey   = 2;
+    bytes IO        = 3;
+    bytes Signature = 4;
+}
