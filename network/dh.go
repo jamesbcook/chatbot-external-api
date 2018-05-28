@@ -29,6 +29,7 @@ func (s Session) SendDH(keyInfo *api.KeyExchange) error {
 	return nil
 }
 
+//ReceiveDH from a connection
 func (s Session) ReceiveDH() (*api.KeyExchange, error) {
 	msgLength := make([]byte, 4)
 	_, err := s.connection.Read(msgLength)

@@ -19,11 +19,11 @@ type ECDH struct {
 func (ecdh *ECDH) CreateKeys() error {
 	pkG, err := memguard.NewMutable(32)
 	if err != nil {
-		return fmt.Errorf("Error gaurding memory %v", err)
+		return fmt.Errorf("Error guarding memory %v", err)
 	}
 	skG, err := memguard.NewMutable(32)
 	if err != nil {
-		return fmt.Errorf("Error gaurding memory %v", err)
+		return fmt.Errorf("Error guarding memory %v", err)
 	}
 	pk := pkG.BufferPointer32()
 	sk := skG.BufferPointer32()
@@ -37,10 +37,10 @@ func (ecdh *ECDH) CreateKeys() error {
 	ecdh.PrivateKey = skG
 	ecdh.PublicKey = pkG
 	if err := ecdh.PrivateKey.MakeImmutable(); err != nil {
-		return fmt.Errorf("Error making private key memory immutalbe")
+		return fmt.Errorf("Error making private key memory immutable")
 	}
 	if err := ecdh.PublicKey.MakeImmutable(); err != nil {
-		return fmt.Errorf("Error making public key memory immutalbe")
+		return fmt.Errorf("Error making public key memory immutable")
 	}
 	return nil
 }
@@ -49,11 +49,11 @@ func (ecdh *ECDH) CreateKeys() error {
 func (ecdh *ECDH) GenerateSharedSecret(theirPK *[32]byte) (*memguard.LockedBuffer, error) {
 	output, err := memguard.NewMutable(32)
 	if err != nil {
-		return nil, fmt.Errorf("Error gaurding memory %v", err)
+		return nil, fmt.Errorf("Error guarding memory %v", err)
 	}
 	curve25519.ScalarMult(output.BufferPointer32(), ecdh.PrivateKey.BufferPointer32(), theirPK)
 	if err := output.MakeImmutable(); err != nil {
-		return nil, fmt.Errorf("Error making public key memory immutalbe")
+		return nil, fmt.Errorf("Error making public key memory immutable")
 	}
 	return output, nil
 }

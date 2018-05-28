@@ -57,7 +57,7 @@ func (symmetric *Symmetric) Encrypt(data []byte) ([]byte, error) {
 func (symmetric *Symmetric) Decrypt(data []byte) ([]byte, error) {
 	plaintext, err := symmetric.aead.Open(nil, symmetric.Nonce[:], data, nil)
 	if err != nil {
-		return nil, fmt.Errorf("Error decrypting messsge %v", err)
+		return nil, fmt.Errorf("Error decrypting message %v", err)
 	}
 	return plaintext, nil
 }

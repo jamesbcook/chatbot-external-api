@@ -24,11 +24,13 @@ type keys struct {
 	TheirIdentityKey []byte
 }
 
+//Session keys
 type Session struct {
 	connection net.Conn
 	Keys       keys
 }
 
+//Listener wrapper for server
 type Listener struct {
 	listener net.Listener
 }
@@ -39,10 +41,12 @@ func init() {
 	}
 }
 
+//SetSecretKeyPair for when you need a static ed25519 key pair
 func SetSecretKeyPair(key crypto.ED25519) {
 	secretKey = key
 }
 
+//GetIdentityKey returns the public key of your ed25519 key pair
 func GetIdentityKey() string {
 	return hex.EncodeToString(secretKey.PrivateKey.Buffer())
 }
@@ -55,6 +59,7 @@ func keyRatchet() (*crypto.ECDH, error) {
 	return dhKey, nil
 }
 
+//Close session connection
 func (s *Session) Close() error {
 	return s.connection.Close()
 }

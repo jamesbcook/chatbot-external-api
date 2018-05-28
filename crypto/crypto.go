@@ -1,17 +1,17 @@
 package crypto
 
-//Cryptor interfafce for encrypting and decrypting
+//Cryptor interface for encrypting and decrypting
 type Cryptor interface {
 	Encrypt()
 	Decrypt()
 }
 
-//KeysGenerator for asymmectric ecnryption
+//KeysGenerator for asymmetric encryption
 type KeysGenerator interface {
 	CreateKeys() error
 }
 
-//KeyGenerator for symmectric ecnryption
+//KeyGenerator for symmetric encryption
 type KeyGenerator interface {
 	CreateKey() error
 }

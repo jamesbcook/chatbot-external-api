@@ -7,14 +7,17 @@ import (
 	"github.com/jamesbcook/chatbot-external-api/api"
 )
 
+//Close listener
 func (l *Listener) Close() error {
 	return l.listener.Close()
 }
 
+//Addr of your listener
 func (l Listener) Addr() net.Addr {
 	return l.listener.Addr()
 }
 
+//Listen for network connections
 func Listen(network, address string) (*Listener, error) {
 	extAPI := &Listener{}
 	l, err := net.Listen(network, address)
@@ -25,6 +28,7 @@ func Listen(network, address string) (*Listener, error) {
 	return extAPI, nil
 }
 
+//Accept network connections
 func (l Listener) Accept() (*Session, error) {
 	conn, err := l.listener.Accept()
 	if err != nil {

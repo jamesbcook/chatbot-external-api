@@ -6,6 +6,7 @@ import (
 	"github.com/jamesbcook/chatbot-external-api/api"
 )
 
+//Dial network connection
 func Dial(network, address string) (*Session, error) {
 	conn, err := net.Dial(network, address)
 	if err != nil {
