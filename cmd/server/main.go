@@ -24,9 +24,9 @@ func main() {
 			continue
 		}
 		defer s.Close()
-		go func(sess *network.Session) {
+		go func(session *network.Session) {
 			for {
-				msg, err := sess.ReceiveEncryptedMsg()
+				msg, err := session.ReceiveEncryptedMsg()
 				if err != nil {
 					log.Println(err)
 					s.Close()
@@ -44,7 +44,7 @@ func main() {
 					m := &api.Message{}
 					m.ID = api.MessageID_Response
 					m.IO = []byte(res)
-					if err := sess.SendEncryptedMsg(m); err != nil {
+					if err := session.SendEncryptedMsg(m); err != nil {
 						log.Println(err)
 						return
 					}

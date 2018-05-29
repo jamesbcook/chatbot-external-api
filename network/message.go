@@ -13,9 +13,9 @@ import (
 func (s *Session) SendEncryptedMsg(message *api.Message) error {
 	var err error
 	sessionCrypto := &crypto.Symmetric{}
-	var tmpsKey [32]byte
-	copy(tmpsKey[:], s.Keys.Theirephemeral)
-	sessionCrypto.Key, err = s.Keys.OurEphemeral.GenerateSharedSecret(&tmpsKey)
+	var tmpKey [32]byte
+	copy(tmpKey[:], s.Keys.Theirephemeral)
+	sessionCrypto.Key, err = s.Keys.OurEphemeral.GenerateSharedSecret(&tmpKey)
 	if err != nil {
 		return err
 	}
@@ -75,9 +75,9 @@ func (s *Session) ReceiveEncryptedMsg() (*api.Message, error) {
 	}
 	sessionCrypto := &crypto.Symmetric{}
 	var nonce [12]byte
-	var tmpsKey [32]byte
-	copy(tmpsKey[:], s.Keys.Theirephemeral)
-	sessionCrypto.Key, err = s.Keys.OurEphemeral.GenerateSharedSecret(&tmpsKey)
+	var tmpKey [32]byte
+	copy(tmpKey[:], s.Keys.Theirephemeral)
+	sessionCrypto.Key, err = s.Keys.OurEphemeral.GenerateSharedSecret(&tmpKey)
 	if err != nil {
 		return nil, err
 	}

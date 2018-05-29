@@ -15,7 +15,7 @@ type ECDH struct {
 	PublicKey  *memguard.LockedBuffer
 }
 
-//CreateKeys for ecdh algo to perform dh key exchange
+//CreateKeys for ecdh algorithm to perform dh key exchange
 func (ecdh *ECDH) CreateKeys() error {
 	pkG, err := memguard.NewMutable(32)
 	if err != nil {
@@ -28,7 +28,7 @@ func (ecdh *ECDH) CreateKeys() error {
 	pk := pkG.BufferPointer32()
 	sk := skG.BufferPointer32()
 	if _, err := io.ReadFull(rand.Reader, sk[:]); err != nil {
-		return fmt.Errorf("couldn't generate privKey: %s", err)
+		return fmt.Errorf("couldn't generate private key: %s", err)
 	}
 	sk[0] &= 248
 	sk[31] &= 127

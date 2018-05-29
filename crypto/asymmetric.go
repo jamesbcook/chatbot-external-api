@@ -13,15 +13,15 @@ type ED25519 struct {
 	PublicKey  *memguard.LockedBuffer
 }
 
-//CreateKeys for ed25519 algo to sign and verify messages
+//CreateKeys for ed25519 algorithm to sign and verify messages
 func (ed *ED25519) CreateKeys() error {
 	pkG, err := memguard.NewMutable(32)
 	if err != nil {
-		return fmt.Errorf("Error gaurding memory %v", err)
+		return fmt.Errorf("Error guarding memory %v", err)
 	}
 	skG, err := memguard.NewMutable(64)
 	if err != nil {
-		return fmt.Errorf("Error gaurding memory %v", err)
+		return fmt.Errorf("Error guarding memory %v", err)
 	}
 
 	err = ed25519.SecureGenerateKey(pkG.BufferPointer(), skG.BufferPointer(), nil)
@@ -30,10 +30,10 @@ func (ed *ED25519) CreateKeys() error {
 	ed.PublicKey = pkG
 
 	if err := ed.PrivateKey.MakeImmutable(); err != nil {
-		return fmt.Errorf("Error making private key memory immutalbe")
+		return fmt.Errorf("Error making private key memory immutable")
 	}
 	if err := ed.PublicKey.MakeImmutable(); err != nil {
-		return fmt.Errorf("Error making public key memory immutalbe")
+		return fmt.Errorf("Error making public key memory immutable")
 	}
 
 	return nil
