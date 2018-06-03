@@ -51,6 +51,7 @@ func main() {
 				case api.MessageID_Hash:
 					fmt.Println("Not Implemented")
 				case api.MessageID_Done:
+					session.Close()
 					return
 				}
 			}

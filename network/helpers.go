@@ -42,12 +42,27 @@ func init() {
 }
 
 //SetSecretKeyPair for when you need a static ed25519 key pair
-func SetSecretKeyPair(key crypto.ED25519) {
-	secretKey = key
+func SetSecretKeyPair(private, public []byte) error {
+	kp, err := crypto.SetKeys(private, public)
+	if err != nil {
+		return err
+	}
+	secretKey = *kp
+	return nil
+}
+
+//GenerateSecretKeyPair used as a backup if SetSecretKeyPair fails
+func GenerateSecretKeyPair() error {
+	return secretKey.CreateKeys()
 }
 
 //GetIdentityKey returns the public key of your ed25519 key pair
 func GetIdentityKey() string {
+	return hex.EncodeToString(secretKey.PublicKey.Buffer())
+}
+
+//GetSecretKey returns the secret key of your ed25519 key pair
+func GetSecretKey() string {
 	return hex.EncodeToString(secretKey.PrivateKey.Buffer())
 }
 
