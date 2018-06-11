@@ -12,7 +12,12 @@ import (
 	"time"
 
 	"github.com/jamesbcook/chatbot-external-api/api"
+	"github.com/jamesbcook/chatbot-external-api/filesystem"
 	"github.com/jamesbcook/chatbot-external-api/network"
+)
+
+const (
+	app = "beacon"
 )
 
 var (
@@ -59,15 +64,16 @@ func csHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(200)
 }
 
-func saveKeys() {
-	log.Println("Saving public key to key.pub")
-	if err := ioutil.WriteFile("key.pub", []byte(network.GetIdentityKey()), 0660); err != nil {
-		log.Println("Couldn't write public key to file")
+func saveKeys(skFile, pkFile string) error {
+	log.Printf("Saving public key to %s", pkFile)
+	if err := ioutil.WriteFile(pkFile, []byte(network.GetIdentityKey()), 0400); err != nil {
+		return fmt.Errorf("Couldn't write public key to file")
 	}
-	log.Println("Saving private key to key.priv")
-	if err := ioutil.WriteFile("key.priv", []byte(network.GetSecretKey()), 0660); err != nil {
-		log.Println("Couldn't write private key to file")
+	log.Printf("Saving private key to %s", skFile)
+	if err := ioutil.WriteFile(skFile, []byte(network.GetSecretKey()), 0400); err != nil {
+		return fmt.Errorf("Couldn't write private key to file")
 	}
+	return nil
 }
 
 func loadFile(file string) ([]byte, error) {
@@ -109,16 +115,35 @@ func init() {
 func main() {
 	lPort := flag.Int("lport", 50001, "Local port to listen on")
 	rhost := flag.String("rhost", "localhost:55449", "Host to send messages to")
-	pub := flag.String("pub", "./key.pub", "Public Key File")
-	private := flag.String("private", "./key.priv", "Private Key File")
+	pub := flag.String("pub", "", "Public Key File")
+	private := flag.String("private", "", "Private Key File")
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, "beacon %v by %s \nUsage:\n", "1.0.0", "@_jbcook")
 		flag.PrintDefaults()
 	}
 	flag.Parse()
-	if err := keySetup(*private, *pub); err != nil {
-		log.Println(err)
-		saveKeys()
+	sf, err := filesystem.GetPrivateKeyFile(app)
+	if err != nil {
+		log.Fatal(err)
+	}
+	pf, err := filesystem.GetPublicKeyFile(app)
+	if err != nil {
+		log.Fatal(err)
+	}
+	if *pub == "" || *private == "" {
+		if err := keySetup(sf, pf); err != nil {
+			log.Println(err)
+			if err := saveKeys(sf, pf); err != nil {
+				log.Fatal(err)
+			}
+		}
+	} else {
+		if err := keySetup(*private, *pub); err != nil {
+			log.Println(err)
+			if err := saveKeys(sf, pf); err != nil {
+				log.Fatal(err)
+			}
+		}
 	}
 	fmt.Printf("Loaded Public Key %s\n", network.GetIdentityKey())
 	httpListen := fmt.Sprintf(":%d", *lPort)

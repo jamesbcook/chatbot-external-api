@@ -1,2 +1,1 @@
-beacon/key.priv
-beacon/key.pub
+beacon/*.key
