@@ -4,10 +4,11 @@ package api;
 
 enum MessageID {
     Done     = 0;
-    ECDH     = 1;
-    Nmap     = 2;
-    Hash     = 3;
-    Response = 4;
+    Response = 1;
+    ECDH     = 2;
+    Nmap     = 3;
+    Hash     = 4;
+    Beacon   = 5;
 }
 message KeyExchange {
     MessageID ID      = 1;
@@ -19,4 +20,5 @@ message Message {
     MessageID ID    = 1;
     bytes NextKey   = 2;
     bytes IO        = 3;
+    string Channel  = 4;
 }

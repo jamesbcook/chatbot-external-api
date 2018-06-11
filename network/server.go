@@ -1,7 +1,6 @@
 package network
 
 import (
-	"fmt"
 	"net"
 
 	"github.com/jamesbcook/chatbot-external-api/api"
@@ -34,7 +33,6 @@ func (l Listener) Accept() (*Session, error) {
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println("Got a connection")
 	s := &Session{connection: conn}
 	key, err := s.ReceiveDH()
 	if err != nil {

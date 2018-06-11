@@ -1,0 +1,51 @@
+# This script adds basic keybase notification functionality to Cobalt Strike
+# Ensure that you configure and started the keybase forwarder
+# keybase_forwarder is the server that is going to except our curl requests and
+# send the results to the keybase API
+# channel is the channel you want to send the message to. Currently teams are not
+# supported. Channel example "bob,alice"
+# By: @_jbcook
+
+$keybase_forwarder = "http://127.0.0.1:50051/";
+$channel = "";
+
+sub send_notification {
+	$data = "content=$1\&channel=$channel";
+	@command = @('curl','-X','POST','-d',"$data", $keybase_forwarder);
+	exec(@command);
+}
+
+on event_notify {
+    $data = "CS:System_Event $2 $+ : $1";
+	send_notification($data);
+}
+
+on event_join {
+    $data = "CS:User_Joined $1 $+ : $2 ";
+	send_notification($data)
+}
+
+on event_action {
+    $data = "CS:Action_Performed $2 $+ : < $+ $3 $+ >: $1 ";
+	send_notification($data);
+}
+
+on event_public {
+    $data = "CS:New_Message $3 $+ : < $+ $1 $+ >: $2 ";
+	send_notification($data)
+}
+
+on event_quit {
+    $data = "CS:User_Left $1 $+ : $2 ";
+	send_notification($data)
+}
+
+on beacon_initial {
+    $data = "CS:New_Beacon Received - ID: $1 | Hostname: " . binfo($1, "computer");
+	send_notification($data)
+}
+
+on ssh_initial {
+	$data = "CS:New_SSH - ID: $1 | Hostname " . binfo($1, "computer");
+	send_notification($data);
+}
