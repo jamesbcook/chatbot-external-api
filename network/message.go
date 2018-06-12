@@ -14,13 +14,11 @@ func (s *Session) SendEncryptedMsg(message *api.Message) error {
 	var err error
 	sessionCrypto := &crypto.Symmetric{}
 	var tmpKey [32]byte
-	copy(tmpKey[:], s.Keys.Theirephemeral)
+	copy(tmpKey[:], s.Keys.Theirephemeral[:])
 	sessionCrypto.Key, err = s.Keys.OurEphemeral.GenerateSharedSecret(&tmpKey)
 	if err != nil {
 		return err
 	}
-	s.Keys.OurEphemeral.PrivateKey.Wipe()
-	s.Keys.OurEphemeral.PublicKey.Wipe()
 	if err := sessionCrypto.CreateKey(nil); err != nil {
 		return err
 	}
@@ -29,7 +27,7 @@ func (s *Session) SendEncryptedMsg(message *api.Message) error {
 		return err
 	}
 	s.Keys.OurEphemeral = dh
-	message.NextKey = dh.PublicKey.Buffer()
+	message.NextKey = dh.PublicKey[:]
 	marshalled, err := proto.Marshal(message)
 	if err != nil {
 		return err
@@ -38,7 +36,7 @@ func (s *Session) SendEncryptedMsg(message *api.Message) error {
 	if err != nil {
 		return err
 	}
-	sessionCrypto.Key.Destroy()
+
 	var signData []byte
 	signData = append(signData, sessionCrypto.Nonce[:]...)
 	signData = append(signData, encryptedOut...)
@@ -70,13 +68,13 @@ func (s *Session) ReceiveEncryptedMsg() (*api.Message, error) {
 	if err != nil {
 		return nil, fmt.Errorf("Error reading encrypted msg length %v", err)
 	}
-	if !verifyMessage(s.Keys.TheirIdentityKey, payload) {
+	if !verifyMessage(s.Keys.TheirIdentityKey[:], payload) {
 		return nil, fmt.Errorf("Message sig not valid")
 	}
 	sessionCrypto := &crypto.Symmetric{}
 	var nonce [12]byte
 	var tmpKey [32]byte
-	copy(tmpKey[:], s.Keys.Theirephemeral)
+	copy(tmpKey[:], s.Keys.Theirephemeral[:])
 	sessionCrypto.Key, err = s.Keys.OurEphemeral.GenerateSharedSecret(&tmpKey)
 	if err != nil {
 		return nil, err
@@ -89,12 +87,12 @@ func (s *Session) ReceiveEncryptedMsg() (*api.Message, error) {
 	if err != nil {
 		return nil, err
 	}
-	sessionCrypto.Key.Destroy()
+
 	ms := &api.Message{}
 	err = proto.Unmarshal(output, ms)
 	if err != nil {
 		return nil, err
 	}
-	s.Keys.Theirephemeral = ms.NextKey
+	copy(s.Keys.Theirephemeral[:], ms.NextKey[:])
 	return ms, nil
 }

@@ -20,8 +20,8 @@ var (
 
 type keys struct {
 	OurEphemeral     *crypto.ECDH
-	Theirephemeral   []byte
-	TheirIdentityKey []byte
+	Theirephemeral   [32]byte
+	TheirIdentityKey [32]byte
 }
 
 //Session keys
@@ -58,12 +58,12 @@ func GenerateSecretKeyPair() error {
 
 //GetIdentityKey returns the public key of your ed25519 key pair
 func GetIdentityKey() string {
-	return hex.EncodeToString(secretKey.PublicKey.Buffer())
+	return hex.EncodeToString(secretKey.PublicKey[:])
 }
 
 //GetSecretKey returns the secret key of your ed25519 key pair
 func GetSecretKey() string {
-	return hex.EncodeToString(secretKey.PrivateKey.Buffer())
+	return hex.EncodeToString(secretKey.PrivateKey[:])
 }
 
 func keyRatchet() (*crypto.ECDH, error) {

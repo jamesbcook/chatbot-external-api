@@ -38,8 +38,8 @@ func (l Listener) Accept() (*Session, error) {
 	if err != nil {
 		return nil, err
 	}
-	s.Keys.TheirIdentityKey = key.IdentityKey
-	s.Keys.Theirephemeral = key.Key
+	copy(s.Keys.TheirIdentityKey[:], key.IdentityKey[:])
+	copy(s.Keys.Theirephemeral[:], key.Key[:])
 	ourDH, err := keyRatchet()
 	if err != nil {
 		return nil, err
@@ -47,8 +47,8 @@ func (l Listener) Accept() (*Session, error) {
 	s.Keys.OurEphemeral = ourDH
 	keyInfo := &api.KeyExchange{}
 	keyInfo.ID = api.MessageID_ECDH
-	keyInfo.IdentityKey = secretKey.PublicKey.Buffer()
-	keyInfo.Key = ourDH.PublicKey.Buffer()
+	keyInfo.IdentityKey = secretKey.PublicKey[:]
+	keyInfo.Key = ourDH.PublicKey[:]
 	if err := s.SendDH(keyInfo); err != nil {
 		return nil, err
 	}

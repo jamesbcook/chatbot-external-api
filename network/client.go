@@ -23,8 +23,9 @@ func Dial(network, address string) (*Session, error) {
 	s.Keys.OurEphemeral = dh
 	keyInfo := &api.KeyExchange{}
 	keyInfo.ID = api.MessageID_ECDH
-	keyInfo.Key = dh.PublicKey.Buffer()
-	keyInfo.IdentityKey = secretKey.PublicKey.Buffer()
+	keyInfo.Key = dh.PublicKey[:]
+	keyInfo.IdentityKey = secretKey.PublicKey[:]
+
 	if err := s.SendDH(keyInfo); err != nil {
 		return nil, err
 	}
@@ -32,7 +33,7 @@ func Dial(network, address string) (*Session, error) {
 	if err != nil {
 		return nil, err
 	}
-	s.Keys.TheirIdentityKey = cDH.IdentityKey
-	s.Keys.Theirephemeral = cDH.Key
+	copy(s.Keys.TheirIdentityKey[:], cDH.IdentityKey[:])
+	copy(s.Keys.Theirephemeral[:], cDH.Key[:])
 	return s, nil
 }

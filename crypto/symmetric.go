@@ -6,26 +6,20 @@ import (
 	"crypto/rand"
 	"fmt"
 	"io"
-
-	"github.com/awnumar/memguard"
 )
 
 //Symmetric key holder
 type Symmetric struct {
-	Key   *memguard.LockedBuffer
+	Key   [32]byte
 	Nonce [12]byte
 	aead  cipher.AEAD
 }
 
 //CreateKey for symmetric encryption
 func (symmetric *Symmetric) CreateKey(nonce *[12]byte) error {
-	block, err := aes.NewCipher(symmetric.Key.Buffer())
+	block, err := aes.NewCipher(symmetric.Key[:])
 	if err != nil {
 		return fmt.Errorf("error creating cipher %v", err.Error())
-	}
-
-	if err := symmetric.Key.MakeImmutable(); err != nil {
-		return err
 	}
 
 	var tmpNonce [12]byte
