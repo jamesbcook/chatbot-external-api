@@ -26,3 +26,9 @@ func GetPrivateKeyFile(application string) (string, error) {
 	err := mkdir(application)
 	return fmt.Sprintf(getKeyDirectory()+"%s/priv.key", application), err
 }
+
+//GetAuthorizedKeyFile for authorizing requests
+func GetAuthorizedKeyFile(application string) (string, error) {
+	err := mkdir(application)
+	return fmt.Sprintf(getKeyDirectory()+"%s/authorized-keys", application), err
+}
