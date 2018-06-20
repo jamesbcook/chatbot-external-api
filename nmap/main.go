@@ -96,7 +96,11 @@ func main() {
 	}
 	var file string
 	if *validKeys == "" {
-		file, err = filesystem.GetAuthorizedKeyFile(application)
+		fs, err := filesystem.New(application)
+		if err != nil {
+			log.Println(err)
+		}
+		file = fs.GetAuthorizedKeyFile()
 		if err != nil {
 			log.Println(err)
 		}

@@ -1,10 +1,8 @@
 package main
 
 import (
-	"encoding/hex"
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"math/rand"
 	"net/http"
@@ -64,50 +62,6 @@ func csHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(200)
 }
 
-func saveKeys(skFile, pkFile string) error {
-	log.Printf("Saving public key to %s", pkFile)
-	if err := ioutil.WriteFile(pkFile, []byte(network.GetIdentityKey()), 0400); err != nil {
-		return fmt.Errorf("Couldn't write public key to file")
-	}
-	log.Printf("Saving private key to %s", skFile)
-	if err := ioutil.WriteFile(skFile, []byte(network.GetSecretKey()), 0400); err != nil {
-		return fmt.Errorf("Couldn't write private key to file")
-	}
-	return nil
-}
-
-func loadFile(file string) ([]byte, error) {
-	f, err := os.Open(file)
-	if err != nil {
-		return nil, err
-	}
-	fileData, err := ioutil.ReadAll(f)
-	if err != nil {
-		return nil, err
-	}
-	output := make([]byte, hex.DecodedLen(len(fileData)))
-	_, err = hex.Decode(output, fileData)
-	if err != nil {
-		return nil, err
-	}
-	return output, nil
-}
-
-func keySetup(privFlag, pubFlag string) error {
-	pub, err := loadFile(pubFlag)
-	if err != nil {
-		return fmt.Errorf("Couldn't load %s", pubFlag)
-	}
-	priv, err := loadFile(privFlag)
-	if err != nil {
-		return fmt.Errorf("Couldn't load %s", privFlag)
-	}
-	if err := network.SetSecretKeyPair(priv, pub); err != nil {
-		return fmt.Errorf("Couldn't set key pair, using random key")
-	}
-	return nil
-}
-
 func init() {
 	rand.Seed(time.Now().UTC().UnixNano())
 }
@@ -122,28 +76,39 @@ func main() {
 		flag.PrintDefaults()
 	}
 	flag.Parse()
-	sf, err := filesystem.GetPrivateKeyFile(app)
-	if err != nil {
-		log.Fatal(err)
-	}
-	pf, err := filesystem.GetPublicKeyFile(app)
-	if err != nil {
-		log.Fatal(err)
-	}
+
+	var privBytes [64]byte
+	var pubBytes [32]byte
+
 	if *pub == "" || *private == "" {
-		if err := keySetup(sf, pf); err != nil {
-			log.Println(err)
-			if err := saveKeys(sf, pf); err != nil {
-				log.Fatal(err)
-			}
+		fs, err := filesystem.New(app)
+		if err != nil {
+			log.Fatal(err)
 		}
+		sk, err := fs.LoadPrivateKeyFile()
+		if err != nil {
+			log.Fatal(err)
+		}
+		pk, err := fs.LoadPublicKeyFile()
+		if err != nil {
+			log.Fatal(err)
+		}
+		copy(privBytes[:], sk)
+		copy(pubBytes[:], pk)
 	} else {
-		if err := keySetup(*private, *pub); err != nil {
-			log.Println(err)
-			if err := saveKeys(sf, pf); err != nil {
-				log.Fatal(err)
-			}
+		sk, err := filesystem.LoadFile(*private)
+		if err != nil {
+			log.Fatal(err)
 		}
+		pk, err := filesystem.LoadFile(*pub)
+		if err != nil {
+			log.Fatal(err)
+		}
+		copy(privBytes[:], sk)
+		copy(pubBytes[:], pk)
+	}
+	if err := network.SetSecretKeyPair(privBytes[:], pubBytes[:]); err != nil {
+		log.Fatal("Couldn't set key pair, using random key")
 	}
 	fmt.Printf("Loaded Public Key %s\n", network.GetIdentityKey())
 	httpListen := fmt.Sprintf(":%d", *lPort)
