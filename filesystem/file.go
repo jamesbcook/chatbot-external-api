@@ -75,7 +75,8 @@ func (f fs) LoadPrivateKeyFile() ([]byte, error) {
 	return loadFile(f.directory + "/priv.key")
 }
 
-func (f fs) SaveKeyToFile(key []byte, path string) error {
+//SaveKeyToFile based on the path passed in
+func SaveKeyToFile(key []byte, path string) error {
 	return ioutil.WriteFile(path, key, 0600)
 }
 

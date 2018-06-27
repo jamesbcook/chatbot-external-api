@@ -10,6 +10,17 @@ enum MessageID {
     Hash     = 4;
     Beacon   = 5;
 }
+
+enum ChatType {
+    Team   = 0;
+    Direct = 1;
+}
+
+message Chat {
+    string Team    = 1;
+    string Channel = 2;
+}
+
 message KeyExchange {
     MessageID ID      = 1;
     bytes IdentityKey = 2;
@@ -17,8 +28,9 @@ message KeyExchange {
 }
 
 message Message {
-    MessageID ID    = 1;
-    bytes NextKey   = 2;
-    bytes IO        = 3;
-    string Channel  = 4;
+    MessageID ID      = 1;
+    bytes NextKey     = 2;
+    bytes IO          = 3;
+    Chat Chat         = 4;
+    ChatType ChatType = 5;
 }

@@ -187,11 +187,7 @@ func TestLoadPrivateKeyFile(t *testing.T) {
 func TestSaveKeyToFile(t *testing.T) {
 	file := "testing.txt"
 	input := "hello world"
-	fs, err := New("test")
-	if err != nil {
-		t.Fatal(err)
-	}
-	if err := fs.SaveKeyToFile([]byte(input), file); err != nil {
+	if err := SaveKeyToFile([]byte(input), file); err != nil {
 		t.Fatal(err)
 	}
 	if err := dirCleanup(file); err != nil {
@@ -204,11 +200,7 @@ func TestExportedLoadFile(t *testing.T) {
 	input := "hello world"
 	encoded := make([]byte, hex.EncodedLen(len([]byte(input))))
 	hex.Encode(encoded, []byte(input))
-	fs, err := New("test")
-	if err != nil {
-		t.Fatal(err)
-	}
-	if err := fs.SaveKeyToFile(encoded, file); err != nil {
+	if err := SaveKeyToFile(encoded, file); err != nil {
 		t.Fatal(err)
 	}
 	output, err := LoadFile(file)

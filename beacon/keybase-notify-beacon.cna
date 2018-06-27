@@ -2,15 +2,19 @@
 # Ensure that you configure and started the keybase forwarder
 # keybase_forwarder is the server that is going to except our curl requests and
 # send the results to the keybase API
-# channel is the channel you want to send the message to. Currently teams are not
-# supported. Channel example "bob,alice"
+# channel is the channel you want to send the message to. Channel example "bob,alice"
+# team can be empty or the team name you want to use
+# when using a team the channel will be a team channel like general
+# chat_type needs to be either Direct or Team
 # By: @_jbcook
 
 $keybase_forwarder = "http://127.0.0.1:50051/";
 $channel = "";
+$team = "";
+$chat_type = "Direct";
 
 sub send_notification {
-	$data = "content=$1\&channel=$channel";
+	$data = "content=$1\&team=$team\&channel=$channel\&chat_type=$chat_type";
 	@command = @('curl','-X','POST','-d',"$data", $keybase_forwarder);
 	exec(@command);
 }
@@ -49,3 +53,4 @@ on ssh_initial {
 	$data = "CS:New_SSH - ID: $1 | Hostname " . binfo($1, "computer");
 	send_notification($data);
 }
+
