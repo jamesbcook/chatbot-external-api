@@ -11,16 +11,20 @@ var (
 	validKeys = [][]byte{}
 )
 
-func signMessage(msg []byte) []byte {
+func hashMessage(msg []byte) []byte {
 	sha := sha3.New256()
-	return secretKey.Sign(sha.Sum(msg))
+	sha.Write(msg)
+	return sha.Sum(nil)
+}
+
+func signMessage(msg []byte) []byte {
+	return secretKey.Sign(msg)
 }
 
 func verifyMessage(pk, msg []byte) bool {
 	signature := make([]byte, signatureSize)
 	copy(signature, msg[0:64])
-	sha := sha3.New256()
-	return crypto.Verify(pk, sha.Sum(msg[64:]), signature)
+	return crypto.Verify(pk, hashMessage(msg[64:]), signature)
 }
 
 //AddAuthKey to array of keys

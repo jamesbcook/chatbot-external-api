@@ -40,7 +40,7 @@ func (s *Session) SendEncryptedMsg(message *api.Message) error {
 	var signData []byte
 	signData = append(signData, sessionCrypto.Nonce[:]...)
 	signData = append(signData, encryptedOut...)
-	signed := signMessage(signData)
+	signed := signMessage(hashMessage(signData))
 	lengthBuffer := make([]byte, msgLengthSize)
 	msgLength := uint32(len(encryptedOut))
 	binary.LittleEndian.PutUint32(lengthBuffer, signatureSize+nonceLengthSize+msgLength)

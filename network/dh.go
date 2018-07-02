@@ -18,7 +18,7 @@ func (s Session) SendDH(keyInfo *api.KeyExchange) error {
 	lenBuf := make([]byte, 4)
 	binary.LittleEndian.PutUint32(lenBuf, 64+marshLen)
 	fullKeyMsg := make([]byte, 4+64+marshLen)
-	signed := signMessage(marshaledKey)
+	signed := signMessage(hashMessage(marshaledKey))
 	copy(fullKeyMsg, lenBuf)
 	copy(fullKeyMsg[4:], signed)
 	copy(fullKeyMsg[4+64:], marshaledKey)
