@@ -10,6 +10,11 @@ import (
 
 //SendDH to a connection
 func (s Session) SendDH(keyInfo *api.KeyExchange) error {
+	randomPadding, err := getRandomPading(128)
+	if err != nil {
+		return err
+	}
+	keyInfo.RandomPadding = randomPadding
 	marshaledKey, err := proto.Marshal(keyInfo)
 	if err != nil {
 		return fmt.Errorf("Error marshaling key %v", err)

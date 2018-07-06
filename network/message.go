@@ -27,6 +27,11 @@ func (s *Session) SendEncryptedMsg(message *api.Message) error {
 		return err
 	}
 	s.Keys.OurEphemeral = dh
+	randomPadding, err := getRandomPading(128)
+	if err != nil {
+		return err
+	}
+	message.RandomPadding = randomPadding
 	message.NextKey = dh.PublicKey[:]
 	marshalled, err := proto.Marshal(message)
 	if err != nil {

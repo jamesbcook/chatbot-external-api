@@ -22,15 +22,17 @@ message Chat {
 }
 
 message KeyExchange {
-    MessageID ID      = 1;
-    bytes IdentityKey = 2;
-    bytes Key         = 3;
+    MessageID ID        = 1;
+    bytes IdentityKey   = 2;
+    bytes Key           = 3;
+    bytes RandomPadding = 4;
 }
 
 message Message {
-    MessageID ID      = 1;
-    bytes NextKey     = 2;
-    bytes IO          = 3;
-    Chat Chat         = 4;
-    ChatType ChatType = 5;
+    MessageID ID        = 1;
+    bytes NextKey       = 2;
+    bytes IO            = 3;
+    Chat Chat           = 4;
+    ChatType ChatType   = 5;
+    bytes RandomPadding = 6;
 }

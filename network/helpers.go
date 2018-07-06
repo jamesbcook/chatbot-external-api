@@ -1,8 +1,10 @@
 package network
 
 import (
+	"crypto/rand"
 	"encoding/hex"
 	"log"
+	"math/big"
 	"net"
 
 	"github.com/jamesbcook/chatbot-external-api/crypto"
@@ -72,6 +74,19 @@ func keyRatchet() (*crypto.ECDH, error) {
 		return nil, err
 	}
 	return dhKey, nil
+}
+
+func getRandomPading(length int64) ([]byte, error) {
+	bufferLen, err := rand.Int(rand.Reader, big.NewInt(length))
+	if err != nil {
+		return nil, err
+	}
+	padding := make([]byte, bufferLen.Int64())
+	_, err = rand.Read(padding)
+	if err != nil {
+		return nil, err
+	}
+	return padding, nil
 }
 
 //Close session connection

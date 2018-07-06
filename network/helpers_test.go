@@ -56,3 +56,14 @@ func TestKeyRatchet(t *testing.T) {
 		log.Fatal("Public key was empty")
 	}
 }
+
+func TestGetRandomPadding(t *testing.T) {
+	var length int64 = 64
+	padding, err := getRandomPading(length)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(padding) > int(length) {
+		t.Fatalf("Padding should be less than or equal to %d, Got %d", length, len(padding))
+	}
+}
