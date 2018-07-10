@@ -27,13 +27,19 @@ func loadFile(input string) ([]byte, error) {
 	return decodeHex(output)
 }
 
+func encodeHex(input []byte) []byte {
+	output := make([]byte, hex.EncodedLen(len(input)))
+	hex.Encode(output, input)
+	return output
+}
+
 func decodeHex(input []byte) ([]byte, error) {
 	output := make([]byte, hex.DecodedLen(len(input)))
 	_, err := hex.Decode(output, input)
 	if err != nil {
 		return nil, err
 	}
-	return output, err
+	return output, nil
 }
 
 func mkdir(application string) error {
@@ -80,7 +86,23 @@ func SaveKeyToFile(key []byte, path string) error {
 	return ioutil.WriteFile(path, key, 0600)
 }
 
-//LoadFile contains a hex encoded private or public key
+//LoadFile returns the hex decoded contents of the passed in file
 func LoadFile(file string) ([]byte, error) {
 	return loadFile(file)
+}
+
+//GetPasswordSaltFile returns the salt used when creating a key from a password
+func (f fs) GetPasswordSaltFile() string {
+	return f.directory + "/salt"
+}
+
+//GetStateFile returns the state file
+func (f fs) GetStateFile() string {
+	return f.directory + "/state"
+}
+
+//WriteToFile takes a byte slice, encodes it to hex and writes that to a file new line (\n) terminated
+func (f fs) WriteToFile(input []byte, path string) error {
+	encodedInput := encodeHex(input)
+	return ioutil.WriteFile(path, encodedInput, 0600)
 }
